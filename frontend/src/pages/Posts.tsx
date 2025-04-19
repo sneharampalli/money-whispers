@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from 'react-bootstrap';
-import { Form } from 'react-bootstrap';
-import { Card } from 'react-bootstrap';
-import { Modal } from 'react-bootstrap';
+import { Button, Card, Form, Modal } from 'react-bootstrap';
 
 type Post = {
     uuid?: string;

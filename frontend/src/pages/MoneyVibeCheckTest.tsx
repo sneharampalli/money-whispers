@@ -1,7 +1,4 @@
-import React, { Component, useEffect } from 'react';
-import ActionButton from '../components/ActionButton.tsx';
-
-const BUTTON_TEXT: string = "begin here";
+import React, { Component } from 'react';
 
 class HomePage extends Component {
   componentDidMount() {
@@ -33,9 +30,6 @@ class HomePage extends Component {
           loading="lazy"
           width="100%"
           height="481"
-          frameBorder="0"
-          marginHeight="0"
-          marginWidth="0"
           title="Money Vibe Check Test"
         ></iframe>
       </div>
