@@ -34,7 +34,6 @@ def list_posts():
 @app.route('/create-post', methods=['POST'])
 def create_post():
     data = request.get_json()
-    print(data)
     if not data:
         return jsonify({'error': 'No data provided'}), 400
     if 'message' not in data:
