@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask
-# from flask_session import Session
 from flask_session.sqlalchemy import SqlAlchemySessionInterface
 from flask_cors import CORS
 from datetime import timedelta
@@ -25,11 +24,8 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'your_secret_key_here')
 
-
-
 # Initialize Flask-Session with your existing SQLAlchemy instance and model
 app.session_interface = SqlAlchemySessionInterface(app, db, table=SessionModel.__table__)
-# Session(app) # Remove this line
 
 routes.register_routes(app)
 
