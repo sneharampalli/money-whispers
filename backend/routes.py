@@ -1,14 +1,46 @@
-from flask import jsonify, request
-from database import Post, db
+import bcrypt
+import os
+
+from flask import jsonify, request, session, g
+from flask_cors import cross_origin
+from database import Users, Post, db
+from functools import wraps
 
 def register_routes(app):
-    @app.route('/posts')
+
+    def login_required(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'uuid' not in session:
+                return jsonify({"error": "Authentication required"}), 401
+            g.current_user = db.session.query(Users).filter_by(uuid=session['uuid']).first()
+
+            if not g.current_user:
+                session.pop('uuid', None)
+                session.pop('username', None)
+                return jsonify({"error": "Invalid session"}), 401
+            return f(*args, **kwargs)
+        return decorated_function
+
+    @app.route('/api/posts')
+    @cross_origin(supports_credentials=True)
+    @login_required
     def list_posts():
         posts = Post.query.all()
-        posts_list = [{'uuid': str(post.uuid), 'message': post.message} for post in posts]
+        posts_list = [{'message': post.message} for post in posts]
         return jsonify(posts_list)
+    
+    @app.route('/api/users')
+    @login_required
+    @cross_origin(supports_credentials=True)
+    def list_users():
+        users = Users.query.all()
+        users_list = [{'username': user.username} for user in users]
+        return jsonify(users_list)
 
-    @app.route('/create-post', methods=['POST'])
+    @app.route('/api/create-post', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    @login_required
     def create_post():
         data = request.get_json()
         if not data:
@@ -26,7 +58,69 @@ def register_routes(app):
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
-        finally:
-            db.session.close()
 
-    # Add other routes here within this register_routes function
+    @app.route('/api/create-user', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    def create_user():
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        if 'username' not in data or 'password' not in data:
+            return jsonify({'error': 'Missing required fields (message)'}), 400
+
+        users_by_username = db.session.query(Users).filter_by(username=data['username']).all()
+        if users_by_username:
+            return jsonify({'error': 'Users with username already exists'}), 409
+        if 'email' in data:
+            users_by_email = db.session.query(Users).filter_by(email=data['email']).all()
+            if users_by_email:
+                return jsonify({'error': 'Users with email already exists'}), 409
+
+        password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        try:
+            new_user = Users(
+                username=data['username'],
+                password_hash=password_hash,
+            )
+            if 'email' in data:
+                new_user.email = data['email']
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify({'message': 'Users created successfully'}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Failed to create user: {str(e)}'}), 500
+
+    @app.route('/api/login', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    def login():
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        if 'username' not in data or 'password' not in data:
+            return jsonify({'error': 'Missing required fields (message)'}), 400
+
+        user = db.session.query(Users).filter_by(username=data['username']).one_or_none()
+        if not user:
+            return jsonify({'error': 'User does not exist'}), 404
+
+        password_check = bcrypt.checkpw(data['password'].encode('utf-8'), user.password_hash.encode('utf-8'))
+        if not password_check:
+            return jsonify({'error': 'Incorrect password'}), 401
+
+        try: 
+            session['uuid'] = str(user.uuid)  # Store the user UUID in the session as a string
+            session['username'] = user.username
+            return jsonify({'username': user.username}, 200)
+        except Exception as e:
+            return jsonify({'error': 'Login successful, but error setting session'}), 500
+        
+
+    @app.route('/api/logout', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    def logout():
+        session.pop('uuid', None)  # Remove user UUID from the session
+        session.pop('username', None) # Remove other session data if needed
+        return jsonify({"message": "Logout successful"}), 200
