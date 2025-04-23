@@ -4,6 +4,9 @@ import HomePage from './pages/HomePage.tsx';
 import MoneyVibeCheckTest from './pages/MoneyVibeCheckTest.tsx';
 import AnonPosts from './pages/AnonPosts.tsx';
 import {Container, Nav, Navbar} from 'react-bootstrap'
+import Users from './pages/Users.tsx';
+import Login from './pages/Login.tsx';
+import Logout from './pages/Logout.tsx';
 
 const MoneyWhispersNavbar = () => {
   return (
@@ -17,6 +20,8 @@ const MoneyWhispersNavbar = () => {
             <Nav.Link as={Link} to="/">Home</Nav.Link>
             <Nav.Link as={Link} to="/money-vibe-check-test">Money Vibe Check Test</Nav.Link>
             <Nav.Link as={Link} to="/posts">Anonymous Money Posts</Nav.Link>
+            <Nav.Link as={Link} to="/users">Create User</Nav.Link>
+            <Nav.Link as={Logout}>Logout</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>
@@ -25,6 +30,7 @@ const MoneyWhispersNavbar = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/money-vibe-check-test" element={<MoneyVibeCheckTest />} />
         <Route path="/posts" element={<AnonPosts />} />
+        <Route path="/users" element={<Users />} />
     </Routes>
     </Router>
 );

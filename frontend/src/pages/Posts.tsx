@@ -14,7 +14,7 @@ const CreatePost = () => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean>(false);
     const [messages, setMessages] = useState<Post[]>([]); // Corrected: Initialize as an empty array
-    const backendURL = 'http://127.0.0.1:5000';
+    const backendURL = 'http://127.0.0.1:5000/api';
 
     const [show, setShow] = useState(false);
 
@@ -24,7 +24,7 @@ const CreatePost = () => {
 
     const fetchMessages = async () => { // Extracted fetch logic into its own function
         try {
-            const response = await fetch(`${backendURL}/posts`);
+            const response = await fetch(`${backendURL}/posts`, {credentials: 'include'});
             if (!response.ok) {
                 throw new Error(`Failed to fetch messages: ${response.status}`);
             }
@@ -68,6 +68,7 @@ const CreatePost = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(postData),
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -81,7 +82,6 @@ const CreatePost = () => {
             }
 
             const result = await response.json();
-            console.log('Post created:', result);
             setSuccess(true);
             setPostData({ message: '' });
             await fetchMessages(); // Await the refresh
@@ -149,7 +149,7 @@ const CreatePost = () => {
                     <ul>
                         {messages.map((item: Post) => (
                             <>
-                            <Card>
+                            <Card key={item.message}>
                                 <Card.Body>
                                 <Card.Text>
                                     {item.message}
