@@ -73,6 +73,12 @@
   font-family: "League Spartan";
 }
 
+.loginButton {
+  font-family: "League Spartan";
+  display: flex;
+  margin-right: 0.5rem;
+}
+
 body {
   font-family: "Libre Baskerville";
 }
