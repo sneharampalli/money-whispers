@@ -68,13 +68,21 @@ def register_routes(app):
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
-        if 'message' not in data:
-            return jsonify({'error': 'Missing one or more required fields (message)'}), 400
-
-        content = data.get('message')
+        if 'message' not in data or 'title' not in data or 'thread_id' not in data:
+            return jsonify({'error': 'Missing one or more required fields (message, title, user_id, thread_id)'}), 400
+        
+        message = data.get('message')
+        title = data.get('title')
+        thread_id = data.get('thread_id')
+        user_id = session.get('user_id')
 
         try:
-            new_post = Post(message=content)
+            new_post = Post(
+                message=message,
+                title=title,
+                thread_id=thread_id,
+                user_id=user_id,
+            )
             db.session.add(new_post)
             db.session.commit()
             return jsonify({'data': new_post, 'message': 'Post created successfully'}), 201
@@ -92,11 +100,14 @@ def register_routes(app):
         if 'message' not in data or 'post_id' not in data or 'user_id' not in data:
             return jsonify({'error': 'Missing one or more required fields (message, post_id, user_id)'}), 400
         
+        message = data.get('message')
+        post_id = data.get('post_id')
+        user_id = session.get('user_id')
         try:
             new_comment = Comment(
-                message=data['message'],
-                post_id=data['post_id'],
-                user_id=data['user_id']
+                message=message,
+                post_id=post_id,
+                user_id=user_id
             )
             db.session.add(new_comment)
             db.session.commit()
