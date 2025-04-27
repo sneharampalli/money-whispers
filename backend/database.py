@@ -44,7 +44,7 @@ class Comment(db.Model):
     post = relationship("Post", back_populates="comments")
     user = relationship("User", back_populates="comment")
 
-class PostLikes(db.Model):
+class PostLike(db.Model):
     __tablename__ = 'postlikes'
     uuid = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = db.Column(UUID(as_uuid=True), ForeignKey('users.uuid'), nullable=False)
@@ -69,7 +69,7 @@ class User(db.Model):
     likes = relationship("PostLike", back_populates="user")
 
     # Fully qualify the path to the Session model
-    sessions = relationship("Session", back_populates="user")
+    sessions = relationship("database.Session", back_populates="user")
 
 class Session(db.Model):
     __tablename__ = 'sessions'

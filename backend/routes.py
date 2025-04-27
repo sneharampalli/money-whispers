@@ -1,9 +1,8 @@
 import bcrypt
-import os
 
 from flask import jsonify, request, session, g
 from flask_cors import cross_origin
-from database import User, Post, db
+from database import Comment, Post, Thread, User, db
 from functools import wraps
 
 def register_routes(app):
@@ -21,7 +20,7 @@ def register_routes(app):
                 return jsonify({"error": "Invalid session"}), 401
             return f(*args, **kwargs)
         return decorated_function
-
+    
     @app.route('/api/posts')
     @cross_origin(supports_credentials=True)
     @login_required
@@ -37,6 +36,30 @@ def register_routes(app):
         users = User.query.all()
         users_list = [{'username': user.username} for user in users]
         return jsonify(users_list)
+    
+    @app.route('/api/create-thread')
+    @cross_origin(supports_credentials=True)
+    @login_required
+    def create_thread():
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        if 'title' not in data or 'description' not in data:
+            return jsonify({'error': 'Missing one or more required fields (title, description)'}), 400
+        
+        title = data['title']
+        thread = db.session.query(Thread).filter_by(title=title).one_or_none()
+        if thread:
+            return jsonify({'error': f'Thread already exists with name {title}'}), 403
+        try:
+            description = data['description']
+            new_thread = Thread(title=title, description=description)
+            db.session.add(new_thread)
+            db.session.commit()
+            return jsonify({'data': new_thread, 'message': 'Thread created successfully'}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
 
     @app.route('/api/create-post', methods=['POST'])
     @cross_origin(supports_credentials=True)
@@ -46,7 +69,7 @@ def register_routes(app):
         if not data:
             return jsonify({'error': 'No data provided'}), 400
         if 'message' not in data:
-            return jsonify({'error': 'Missing required fields (message)'}), 400
+            return jsonify({'error': 'Missing one or more required fields (message)'}), 400
 
         content = data.get('message')
 
@@ -54,10 +77,33 @@ def register_routes(app):
             new_post = Post(message=content)
             db.session.add(new_post)
             db.session.commit()
-            return jsonify({'message': 'Post created successfully'}), 201
+            return jsonify({'data': new_post, 'message': 'Post created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
+        
+    @app.route('/api/create-comment', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    def create_comment():
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        if 'message' not in data or 'post_id' not in data or 'user_id' not in data:
+            return jsonify({'error': 'Missing one or more required fields (message, post_id, user_id)'}), 400
+        
+        try:
+            new_comment = Comment(
+                message=data['message'],
+                post_id=data['post_id'],
+                user_id=data['user_id']
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+            return jsonify({'data': new_comment, 'message': 'Comment created successfully'}), 201
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': f'Failed to create comment: {str(e)}'}), 500
 
     @app.route('/api/create-user', methods=['POST'])
     @cross_origin(supports_credentials=True)
@@ -67,7 +113,7 @@ def register_routes(app):
             return jsonify({'error': 'No data provided'}), 400
 
         if 'username' not in data or 'password' not in data:
-            return jsonify({'error': 'Missing required fields (message)'}), 400
+            return jsonify({'error': 'Missing one or more required fields (message)'}), 400
 
         users_by_username = db.session.query(User).filter_by(username=data['username']).all()
         if users_by_username:
@@ -87,7 +133,7 @@ def register_routes(app):
                 new_user.email = data['email']
             db.session.add(new_user)
             db.session.commit()
-            return jsonify({'message': 'Users created successfully'}), 201
+            return jsonify({'data': new_user, 'message': 'Users created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create user: {str(e)}'}), 500
@@ -100,7 +146,7 @@ def register_routes(app):
             return jsonify({'error': 'No data provided'}), 400
 
         if 'username' not in data or 'password' not in data:
-            return jsonify({'error': 'Missing required fields (message)'}), 400
+            return jsonify({'error': 'Missing one or more required fields (message)'}), 400
 
         user = db.session.query(User).filter_by(username=data['username']).one_or_none()
         if not user:
