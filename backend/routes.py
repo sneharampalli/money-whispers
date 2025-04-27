@@ -3,7 +3,7 @@ import os
 
 from flask import jsonify, request, session, g
 from flask_cors import cross_origin
-from database import Users, Post, db
+from database import User, Post, db
 from functools import wraps
 
 def register_routes(app):
@@ -13,7 +13,7 @@ def register_routes(app):
         def decorated_function(*args, **kwargs):
             if 'uuid' not in session:
                 return jsonify({"error": "Authentication required"}), 401
-            g.current_user = db.session.query(Users).filter_by(uuid=session['uuid']).first()
+            g.current_user = db.session.query(User).filter_by(uuid=session['uuid']).first()
 
             if not g.current_user:
                 session.pop('uuid', None)
@@ -34,7 +34,7 @@ def register_routes(app):
     @login_required
     @cross_origin(supports_credentials=True)
     def list_users():
-        users = Users.query.all()
+        users = User.query.all()
         users_list = [{'username': user.username} for user in users]
         return jsonify(users_list)
 
@@ -69,17 +69,17 @@ def register_routes(app):
         if 'username' not in data or 'password' not in data:
             return jsonify({'error': 'Missing required fields (message)'}), 400
 
-        users_by_username = db.session.query(Users).filter_by(username=data['username']).all()
+        users_by_username = db.session.query(User).filter_by(username=data['username']).all()
         if users_by_username:
             return jsonify({'error': 'Users with username already exists'}), 409
         if 'email' in data:
-            users_by_email = db.session.query(Users).filter_by(email=data['email']).all()
+            users_by_email = db.session.query(User).filter_by(email=data['email']).all()
             if users_by_email:
                 return jsonify({'error': 'Users with email already exists'}), 409
 
         password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         try:
-            new_user = Users(
+            new_user = User(
                 username=data['username'],
                 password_hash=password_hash,
             )
@@ -102,7 +102,7 @@ def register_routes(app):
         if 'username' not in data or 'password' not in data:
             return jsonify({'error': 'Missing required fields (message)'}), 400
 
-        user = db.session.query(Users).filter_by(username=data['username']).one_or_none()
+        user = db.session.query(User).filter_by(username=data['username']).one_or_none()
         if not user:
             return jsonify({'error': 'User does not exist'}), 404
 
