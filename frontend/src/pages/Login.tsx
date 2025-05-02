@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {Button, Form, Modal} from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 
 type User = {
     username: string;
@@ -16,6 +17,8 @@ const Login = () => {
         username: '',
         password: '',
     });
+
+    const { login } = useAuth();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -66,6 +69,7 @@ const Login = () => {
                 username: '',
                 password: '',
              });
+             login(result);
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {

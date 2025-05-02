@@ -5,6 +5,7 @@ import MoneyVibeCheckTest from './pages/MoneyVibeCheckTest.tsx';
 import AnonPosts from './pages/AnonPosts.tsx';
 import {Container, Nav, Navbar} from 'react-bootstrap'
 import Login from './pages/Login.tsx';
+import ProtectedRoute from './pages/ProtectedRoute.tsx';
 
 const MoneyWhispersNavbar = () => {
   return (
@@ -29,6 +30,7 @@ const MoneyWhispersNavbar = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/money-vibe-check-test" element={<MoneyVibeCheckTest />} />
         <Route path="/posts" element={<AnonPosts />} />
+        {/* <Route path="/posts" element={<ProtectedRoute><AnonPosts /></ProtectedRoute>} /> */}
     </Routes>
     </Router>
 );

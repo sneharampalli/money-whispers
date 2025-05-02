@@ -10,6 +10,8 @@ def register_routes(app):
     def login_required(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            print('is uuid in session')
+            print('uuid' in session)
             if 'uuid' not in session:
                 return jsonify({"error": "Authentication required"}), 401
             g.current_user = db.session.query(User).filter_by(uuid=session['uuid']).first()
@@ -26,8 +28,16 @@ def register_routes(app):
     @login_required
     def list_posts():
         posts = Post.query.all()
-        posts_list = [{'message': post.message} for post in posts]
+        posts_list = [{'message': post.message, 'thread_title': post.thread.title, 'author': post.user.username } for post in posts]
         return jsonify(posts_list)
+    
+    @app.route('/api/threads')
+    @cross_origin(supports_credentials=True)
+    @login_required
+    def list_threads():
+        threads = Thread.query.all()
+        threads_list = [{'thread_id': thread.uuid, 'title': thread.title, 'description': thread.description} for thread in threads]
+        return jsonify(threads_list)
     
     @app.route('/api/users')
     @login_required
@@ -37,7 +47,7 @@ def register_routes(app):
         users_list = [{'username': user.username} for user in users]
         return jsonify(users_list)
     
-    @app.route('/api/create-thread')
+    @app.route('/api/create-thread', methods=['POST'])
     @cross_origin(supports_credentials=True)
     @login_required
     def create_thread():
@@ -56,7 +66,7 @@ def register_routes(app):
             new_thread = Thread(title=title, description=description)
             db.session.add(new_thread)
             db.session.commit()
-            return jsonify({'data': new_thread, 'message': 'Thread created successfully'}), 201
+            return jsonify({'data': {title: title, description: description}, 'message': 'Thread created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
@@ -74,7 +84,9 @@ def register_routes(app):
         message = data.get('message')
         title = data.get('title')
         thread_id = data.get('thread_id')
-        user_id = session.get('user_id')
+        user_id = session.get('uuid')
+        print('user_id')
+        print(user_id)
 
         try:
             new_post = Post(
@@ -85,7 +97,7 @@ def register_routes(app):
             )
             db.session.add(new_post)
             db.session.commit()
-            return jsonify({'data': new_post, 'message': 'Post created successfully'}), 201
+            return jsonify({'data': {message: message, title: title, thread_id: thread_id, user_id: user_id}, 'message': 'Post created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
@@ -102,7 +114,7 @@ def register_routes(app):
         
         message = data.get('message')
         post_id = data.get('post_id')
-        user_id = session.get('user_id')
+        user_id = session.get('uuid')
         try:
             new_comment = Comment(
                 message=message,
@@ -111,7 +123,7 @@ def register_routes(app):
             )
             db.session.add(new_comment)
             db.session.commit()
-            return jsonify({'data': new_comment, 'message': 'Comment created successfully'}), 201
+            return jsonify({'data': {message: message, post_id: post_id, user_id: user_id}, 'message': 'Comment created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create comment: {str(e)}'}), 500
