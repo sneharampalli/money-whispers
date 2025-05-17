@@ -1,254 +1,330 @@
-import React, { useEffect, useState } from 'react';
-import {Button, Form, Modal} from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../AuthContext';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../AuthContext";
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Typography,
+  Box,
+  IconButton,
+  AppBar,
+  Toolbar,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 type User = {
-    username: string;
-    email?: string;
-    password: string;
-}
+  username: string;
+  email?: string;
+  password: string;
+};
+
+const StyledButton = styled(Button)({
+  margin: "0 8px",
+});
 
 // Page to show the users.
-const Login = () => { 
-    const backendURL = 'http://127.0.0.1:5000/api';
+const Login = () => {
+  const backendURL = "http://127.0.0.1:5000/api";
 
-    const [postData, setPostData] = useState<User>({
-        username: '',
-        password: '',
-    });
+  const [postData, setPostData] = useState<User>({
+    username: "",
+    password: "",
+  });
 
-    const { login } = useAuth();
+  const { user, login, logout } = useAuth();
 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<boolean>(false);
-    const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
 
-    const [showLoginForm, setShowLoginForm] = useState<boolean>(true);
-    const handleClose = () => setShow(false);
-    const handleLoginShow = () => setShow(true);
-    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setPostData(prev => ({ ...prev, [name]: value }));
-    };
+  const [showLoginForm, setShowLoginForm] = useState<boolean>(true);
+  const handleClose = () => setOpen(false);
+  const handleLoginShow = () => setOpen(true);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPostData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    useEffect(() => {
-        setPostData(prev => ({ ...prev }));
-    }, []);
+  useEffect(() => {
+    setPostData((prev) => ({ ...prev }));
+  }, []);
 
-    const handleLoginSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(false);
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
 
-        try {
-            const response = await fetch(`${backendURL}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-                credentials: 'include',
-            });
+    try {
+      const response = await fetch(`${backendURL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+        credentials: "include",
+      });
 
-            if (!response.ok) {
-                let errorMessage = 'Failed to login.';
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                } catch (parseError) {
-                }
-                throw new Error(errorMessage);
-            }
+      const responseData = await response.json();
 
-            const result = await response.json();
-            setSuccess(true);
-            setPostData({ 
-                username: '',
-                password: '',
-             });
-             login(result);
-        } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred.');
-        } finally {
-            // loading
-            setLoading(false);
-            // close modal
-            setShow(false);
-        }
-    };
+      if (!response.ok) {
+        const errorMessage =
+          responseData.error ||
+          "Invalid username or password. Please try again.";
+        throw new Error(errorMessage);
+      }
 
-    const [logoutError, setLogoutError] = useState<string | null>(null);
-
-    const handleLogout = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(`${backendURL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                let logoutErrorMessage = 'Failed to logout.';
-                try {
-                    const logoutErrorData = await response.json();
-                    logoutErrorMessage = logoutErrorData.error || logoutErrorMessage;
-                } catch (parseError) {
-                }
-                throw new Error(logoutErrorMessage);
-            }
-
-            const result = await response.json();
-        } catch (err: any) {
-            setLogoutError(err.message || 'An unexpected error occurred.');
-        } finally {
-            console.log("logged out")
-        }
+      setSuccess(true);
+      setPostData({
+        username: "",
+        password: "",
+      });
+      login(responseData);
+      // Close modal only on successful login
+      setOpen(false);
+    } catch (err: any) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+    } finally {
+      // loading
+      setLoading(false);
     }
+  };
 
-    const handleCreateUserSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
 
+  const handleLogout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${backendURL}/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        let logoutErrorMessage = "Failed to logout.";
         try {
-            const response = await fetch(`${backendURL}/create-user`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-            });
+          const logoutErrorData = await response.json();
+          logoutErrorMessage = logoutErrorData.error || logoutErrorMessage;
+        } catch (parseError) {}
+        throw new Error(logoutErrorMessage);
+      }
 
-            if (!response.ok) {
-                let errorMessage = 'Failed to create user.';
-                try {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error || errorMessage;
-                } catch (parseError) {
-                }
-                throw new Error(errorMessage);
-            }
+      const result = await response.json();
+      logout(); // Call the logout function from AuthContext
+    } catch (err: any) {
+      setLogoutError(err.message || "An unexpected error occurred.");
+    } finally {
+      console.log("logged out");
+    }
+  };
 
-            const result = await response.json();
-            setSuccess(true);
-            setPostData({ 
-                username: '',
-                password: '',
-            });
-        } catch (err: any) {
-            setError(err.message || 'An unexpected error occurred.');
-        } finally {
-            // loading
-            setLoading(false);
-            // close modal
-            setShow(false);
-        }
-    };
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
 
-    return (
-        <>
-            <div className="loginButton">
-                <Button variant="primary" className="loginButton" onClick={handleLoginShow}>
-                    Login
-                </Button>
-                <Button variant="outline-primary" className="loginButton" onClick={handleLogout}>
-                    Logout
-                </Button>
-            </div>
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                <Modal.Title>{showLoginForm ? 'Login' : 'Create account'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {showLoginForm && <Form onSubmit={handleLoginSubmit} className="space-y-4">
-                        <Form.Group>
-                            <Form.Label htmlFor="username" className="block text-sm font-medium">Username</Form.Label>
-                            <Form.Control
-                                id="username"
-                                name="username"
-                                value={postData.username}
-                                onChange={handleChange}
-                                placeholder="Enter your username"
-                                className="mt-1"
-                                required
-                                disabled={loading}
-                            />
-                            <Form.Label htmlFor="password" className="block text-sm font-medium">Password</Form.Label>
-                            <Form.Control
-                                id="password"
-                                name="password"
-                                value={postData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                className="mt-1"
-                                required
-                                type='password'
-                                disabled={loading}
-                            />
-                        </Form.Group>
-                        <br/>
-                        <Form.Text>Don't have an account. Create one <Button onClick={() => setShowLoginForm(false)}>here</Button>.</Form.Text>
-                    </Form>}
-                    {!showLoginForm && 
-                        <Form onSubmit={handleCreateUserSubmit} className="space-y-4">
-                            <Form.Group>
-                                <Form.Label htmlFor="username" className="block text-sm font-medium">Username</Form.Label>
-                                <Form.Control
-                                    id="username"
-                                    name="username"
-                                    value={postData.username}
-                                    onChange={handleChange}
-                                    placeholder="Enter your username"
-                                    className="mt-1"
-                                    required
-                                    disabled={loading}
-                                />
-                                <Form.Label htmlFor="password" className="block text-sm font-medium">Password</Form.Label>
-                                <Form.Control
-                                    id="password"
-                                    name="password"
-                                    value={postData.password}
-                                    onChange={handleChange}
-                                    placeholder="Enter your password"
-                                    className="mt-1"
-                                    required
-                                    type='password'
-                                    disabled={loading}
-                                />
-                                <Form.Label htmlFor="email" className="block text-sm font-medium">Email</Form.Label>
-                                <Form.Control
-                                    id="email"
-                                    name="email"
-                                    value={postData.email}
-                                    onChange={handleChange}
-                                    placeholder="Enter your email"
-                                    className="mt-1"
-                                    disabled={loading}
-                                />
-                            </Form.Group>
-                            <br/>
-                            <Form.Text>Have an account? Login <Button onClick={() => setShowLoginForm(true)}>here</Button>.</Form.Text>
-                        </Form>
-                    }
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Close
-                </Button>
-                <Button type="submit" disabled={loading} onClick={showLoginForm ? handleLoginSubmit : handleCreateUserSubmit}>
-                    {loading ? 'Creating...' : 'Login'}
-                </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
-    );
-}
+    try {
+      const response = await fetch(`${backendURL}/create-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        const errorMessage =
+          responseData.error || "Failed to create account. Please try again.";
+        throw new Error(errorMessage);
+      }
+
+      setSuccess(true);
+      setPostData({
+        username: "",
+        password: "",
+      });
+      // Only close dialog on success
+      setOpen(false);
+    } catch (err: any) {
+      setError(
+        err.message || "An unexpected error occurred. Please try again."
+      );
+    } finally {
+      // loading
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+        {!user ? (
+          <StyledButton
+            variant="contained"
+            color="primary"
+            onClick={handleLoginShow}
+            startIcon={<LoginIcon />}
+          >
+            Login
+          </StyledButton>
+        ) : (
+          <StyledButton
+            variant="outlined"
+            color="primary"
+            onClick={handleLogout}
+            startIcon={<LogoutIcon />}
+          >
+            Logout
+          </StyledButton>
+        )}
+      </Box>
+
+      <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+        <DialogTitle>{showLoginForm ? "Login" : "Create Account"}</DialogTitle>
+        <DialogContent>
+          {showLoginForm ? (
+            <Box component="form" onSubmit={handleLoginSubmit} sx={{ mt: 1 }}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="username"
+                label="Username"
+                name="username"
+                autoComplete="username"
+                autoFocus
+                value={postData.username}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                value={postData.password}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              {error && (
+                <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                  {error}
+                </Typography>
+              )}
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+                <Typography variant="body2">
+                  Don't have an account?{" "}
+                  <Button
+                    onClick={() => setShowLoginForm(false)}
+                    sx={{ p: 0, minWidth: "auto" }}
+                  >
+                    Create one
+                  </Button>
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Box
+              component="form"
+              onSubmit={handleCreateUserSubmit}
+              sx={{ mt: 1 }}
+            >
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="username"
+                label="Username"
+                name="username"
+                autoComplete="username"
+                autoFocus
+                value={postData.username}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                value={postData.password}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                name="email"
+                label="Email"
+                type="email"
+                id="email"
+                autoComplete="email"
+                value={postData.email}
+                onChange={handleChange}
+                disabled={loading}
+              />
+              {error && (
+                <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                  {error}
+                </Typography>
+              )}
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+                <Typography variant="body2">
+                  Have an account?{" "}
+                  <Button
+                    onClick={() => setShowLoginForm(true)}
+                    sx={{ p: 0, minWidth: "auto" }}
+                  >
+                    Login here
+                  </Button>
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={showLoginForm ? handleLoginSubmit : handleCreateUserSubmit}
+            variant="contained"
+            color="primary"
+            disabled={loading}
+          >
+            {loading
+              ? "Processing..."
+              : showLoginForm
+              ? "Login"
+              : "Create Account"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
 
 export default Login;
