@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, ChangeEvent } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Box, Button, Card, FormControl, FormLabel, Modal, Select, Typography, MenuItem, CardContent, TextField, Link, IconButton } from '@mui/material';
 import { WhisperContext, Thread } from './WhisperContext.tsx';
 import AddIcon from '@mui/icons-material/Add';
@@ -6,7 +6,6 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import { useNavigate } from 'react-router-dom';
 import About from './About.tsx';
-import { useAuth } from '../AuthContext';
 
 type Whisper = {
     title: string;
@@ -45,6 +44,9 @@ const CreateWhisper = () => {
     const backendURL = 'http://127.0.0.1:5000/api';
     const navigate = useNavigate();
 
+    console.log(successWhisper);
+    console.log(successThread);
+
     const [show, setShow] = useState(false);
 
     const handleClose = () => setShow(false);
@@ -54,7 +56,7 @@ const CreateWhisper = () => {
 
     const handleShowAbout = (show: boolean) => setShowAbout(show);
 
-    const fetchMessages = async () => {
+    const fetchMessages = useCallback(async () => {
         try {
             const response = await fetch(`${backendURL}/whispers`, {credentials: 'include'});
             if (response.status === 401) {
@@ -75,7 +77,7 @@ const CreateWhisper = () => {
             }
             setError(error.message || 'Failed to fetch whispers');
         }
-    };
+    }, [navigate, backendURL]);
 
     useEffect(() => {
         fetchMessages();
@@ -145,7 +147,7 @@ const CreateWhisper = () => {
                 throw new Error(errorMessage);
             }
 
-            const result = await response.json();
+            // const result = await response.json();
             setSuccessThread(true);
             setThreadData({ thread_id: '', title: '', description: '' });
             context?.fetchThreads();

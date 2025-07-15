@@ -2,7 +2,7 @@ import bcrypt
 
 from flask import jsonify, request, session, g
 from flask_cors import cross_origin
-from database import Comment, Post, Thread, User, db
+from database import Comment, Whisper, Thread, User, db
 from functools import wraps
 
 def register_routes(app):
@@ -10,26 +10,32 @@ def register_routes(app):
     def login_required(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            print('is uuid in session')
-            print('uuid' in session)
             if 'uuid' not in session:
                 return jsonify({"error": "Authentication required"}), 401
-            g.current_user = db.session.query(User).filter_by(uuid=session['uuid']).first()
-
-            if not g.current_user:
-                session.pop('uuid', None)
-                session.pop('username', None)
-                return jsonify({"error": "Invalid session"}), 401
-            return f(*args, **kwargs)
+            
+            try:
+                g.current_user = db.session.query(User).filter_by(uuid=session['uuid']).first()
+                if not g.current_user:
+                    # Clear invalid session
+                    session.clear()
+                    return jsonify({"error": "Invalid session"}), 401
+                return f(*args, **kwargs)
+            except Exception as e:
+                # Clear session on any error
+                session.clear()
+                return jsonify({"error": "Session error"}), 401
         return decorated_function
     
-    @app.route('/api/posts')
+    @app.route('/api/whispers')
     @cross_origin(supports_credentials=True)
     @login_required
-    def list_posts():
-        posts = Post.query.all()
-        posts_list = [{'message': post.message, 'thread_title': post.thread.title, 'author': post.user.username } for post in posts]
-        return jsonify(posts_list)
+    def list_whispers():
+        try:
+            whispers = Whisper.query.all()
+            whispers_list = [{'uuid': whisper.uuid, 'title': whisper.title, 'message': whisper.message, 'thread_title': whisper.thread.title, 'author': whisper.user.username } for whisper in whispers]
+            return jsonify(whispers_list)
+        except Exception as e:
+            return jsonify({"error": "Failed to fetch whispers"}), 500
     
     @app.route('/api/threads')
     @cross_origin(supports_credentials=True)
@@ -69,12 +75,12 @@ def register_routes(app):
             return jsonify({'data': {title: title, description: description}, 'message': 'Thread created successfully'}), 201
         except Exception as e:
             db.session.rollback()
-            return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
+            return jsonify({'error': f'Failed to create whisper: {str(e)}'}), 500
 
-    @app.route('/api/create-post', methods=['POST'])
+    @app.route('/api/create-whisper', methods=['POST'])
     @cross_origin(supports_credentials=True)
     @login_required
-    def create_post():
+    def create_whisper():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
@@ -89,41 +95,50 @@ def register_routes(app):
         print(user_id)
 
         try:
-            new_post = Post(
+            new_whisper = Whisper(
                 message=message,
                 title=title,
                 thread_id=thread_id,
                 user_id=user_id,
             )
-            db.session.add(new_post)
+            db.session.add(new_whisper)
             db.session.commit()
-            return jsonify({'data': {message: message, title: title, thread_id: thread_id, user_id: user_id}, 'message': 'Post created successfully'}), 201
+            return jsonify({'data': {message: message, title: title, thread_id: thread_id, user_id: user_id}, 'message': 'Whisper created successfully'}), 201
         except Exception as e:
             db.session.rollback()
-            return jsonify({'error': f'Failed to create post: {str(e)}'}), 500
+            return jsonify({'error': f'Failed to create whisper: {str(e)}'}), 500
         
-    @app.route('/api/create-comment', methods=['POST'])
+    @app.route('/api/whispers/<whisper_id>')
     @cross_origin(supports_credentials=True)
-    def create_comment():
+    @login_required
+    def get_whisper(whisper_id):
+        whisper = Whisper.query.filter_by(uuid=whisper_id).first()
+        comments = Comment.query.filter_by(whisper_id=whisper_id).all()
+        comments_list = [{'message': comment.message, 'created_at': comment.created_at, 'author': comment.user.username} for comment in comments]
+        return jsonify({'uuid': whisper.uuid, 'title': whisper.title, 'thread_id': whisper.thread_id, 'author': whisper.user.username, 'message': whisper.message, 'user_id': whisper.user_id, 'comments': comments_list})
+        
+    @app.route('/api/whispers/<whisper_id>/comments', methods=['POST'])
+    @cross_origin(supports_credentials=True)
+    @login_required
+    def create_comment(whisper_id):
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
-        if 'message' not in data or 'post_id' not in data or 'user_id' not in data:
-            return jsonify({'error': 'Missing one or more required fields (message, post_id, user_id)'}), 400
+        if 'message' not in data:
+            return jsonify({'error': 'Missing one or more required fields (message, whisper_id, user_id)'}), 400
         
         message = data.get('message')
-        post_id = data.get('post_id')
         user_id = session.get('uuid')
         try:
             new_comment = Comment(
                 message=message,
-                post_id=post_id,
+                whisper_id=whisper_id,
                 user_id=user_id
             )
             db.session.add(new_comment)
             db.session.commit()
-            return jsonify({'data': {message: message, post_id: post_id, user_id: user_id}, 'message': 'Comment created successfully'}), 201
+            return jsonify({'data': {message: message, whisper_id: whisper_id, user_id: user_id}, 'message': 'Comment created successfully'}), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create comment: {str(e)}'}), 500
@@ -135,8 +150,8 @@ def register_routes(app):
         if not data:
             return jsonify({'error': 'No data provided'}), 400
 
-        if 'username' not in data or 'password' not in data:
-            return jsonify({'error': 'Missing one or more required fields (message)'}), 400
+        if 'username' not in data or 'password' not in data or 'email' not in data:
+            return jsonify({'error': 'Missing one or more required fields (username, password, email)'}), 400
 
         users_by_username = db.session.query(User).filter_by(username=data['username']).all()
         if users_by_username:
@@ -151,12 +166,19 @@ def register_routes(app):
             new_user = User(
                 username=data['username'],
                 password_hash=password_hash,
+                email=data['email']
             )
-            if 'email' in data:
-                new_user.email = data['email']
             db.session.add(new_user)
             db.session.commit()
-            return jsonify({'data': new_user, 'message': 'Users created successfully'}), 201
+            
+            # Automatically log in the user after registration
+            session['uuid'] = str(new_user.uuid)
+            session['username'] = new_user.username
+            
+            return jsonify({
+                'username': new_user.username,
+                'message': 'Registration successful'
+            }), 201
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': f'Failed to create user: {str(e)}'}), 500
@@ -182,7 +204,7 @@ def register_routes(app):
         try: 
             session['uuid'] = str(user.uuid)  # Store the user UUID in the session as a string
             session['username'] = user.username
-            return jsonify({'username': user.username}, 200)
+            return jsonify({'username': user.username}), 200
         except Exception as e:
             return jsonify({'error': 'Login successful, but error setting session'}), 500
         

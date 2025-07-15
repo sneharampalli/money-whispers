@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';  // Fix this import
-import { Card, CardContent, Divider, Typography, Button, Box, FormLabel, FormControl, TextField, Paper, Avatar, Link, IconButton } from '@mui/material';
-import { WhisperContext } from './WhisperContext.tsx';
+import { Card, CardContent, Typography, Button, Box, FormControl, TextField, Paper, Avatar, IconButton } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const Post = () => {
@@ -34,12 +33,11 @@ const Post = () => {
         if (!response.ok) {
             throw new Error(`Failed to create comment: ${response.status}`);
         }
-        const data = await response.json();
         setComment('');
         fetchPost();
     };
 
-    const fetchPost = async () => {
+    const fetchPost = useCallback(async () => {
         setLoading(true);  // Add loading state
         try {
             console.log('Fetching whisper:', whisperId);  // Debug log
@@ -50,7 +48,6 @@ const Post = () => {
                 throw new Error(`Failed to fetch whispers: ${response.status}`);
             }
             const data = await response.json();
-            console.log('Received whisper data:', data);  // Debug log
             setPost(data);
         } catch (error: any) {
             console.error('Error fetching whispers:', error);
@@ -58,13 +55,34 @@ const Post = () => {
         } finally {
             setLoading(false);  // Reset loading state
         }
-    };
+    }, [whisperId]);
+    
+
+    // const fetchPost = async () => {
+    //     setLoading(true);  // Add loading state
+    //     try {
+    //         console.log('Fetching whisper:', whisperId);  // Debug log
+    //         const response = await fetch(`${backendURL}/whispers/${whisperId}`, {
+    //             credentials: 'include'
+    //         });
+    //         if (!response.ok) {
+    //             throw new Error(`Failed to fetch whispers: ${response.status}`);
+    //         }
+    //         const data = await response.json();
+    //         setPost(data);
+    //     } catch (error: any) {
+    //         console.error('Error fetching whispers:', error);
+    //         setError(error.message || 'Failed to fetch whispers');
+    //     } finally {
+    //         setLoading(false);  // Reset loading state
+    //     }
+    // };
 
     useEffect(() => {
         if (whisperId) {
             fetchPost();
         }
-    }, [whisperId]);
+    }, [whisperId, fetchPost]);
 
     if (loading) {
         return (

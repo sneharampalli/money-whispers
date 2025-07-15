@@ -5,6 +5,7 @@ const WhispersProvider: React.FC<{ children: React.ReactNode }> = ({ children })
     const backendURL = 'http://127.0.0.1:5000/api';
     const [threadData, setThreadData] = useState<Thread[]>([]);
     const [error, setError] = useState(null);
+    console.log(error)
 
     const fetchThreads = async () => { // Extracted fetch logic into its own function
         try {

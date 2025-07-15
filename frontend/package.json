@@ -1,5 +1,5 @@
 {
-  "name": "money-whispers",
+  "name": "money-whispers-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -48,10 +48,12 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "@babel/preset-env": "^7.28.0",
-    "@babel/preset-react": "^7.27.1",
-    "@types/react-router-dom": "^5.3.3",
-    "babel-jest": "^30.0.4"
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router-dom$": "<rootDir>/node_modules/react-router-dom"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!react-router-dom|@remix-run)/"
+    ]
   }
 }

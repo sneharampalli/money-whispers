@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import { createContext } from 'react';
 
 export type Thread = {
   thread_id: string;

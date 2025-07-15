@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { Box, Button, FormControl, FormLabel, IconButton, Input, InputLabel, TextField, Typography } from '@mui/material';
+import { Box, Button, FormControl, FormLabel, TextField, Typography } from '@mui/material';
 import { Modal } from '@mui/material';
 import Secondary_Logo from '../assets/Secondary_Black.svg';
 type User = {
@@ -49,6 +49,8 @@ const Login = () => {
     useEffect(() => {
         setPostData(prev => ({ ...prev }));
     }, []);
+
+    console.log(success);
 
     const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

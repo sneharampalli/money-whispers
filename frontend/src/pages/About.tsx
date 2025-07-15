@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box, Link, Modal, Button } from '@mui/material';
+import { Typography, Box, Modal, Button } from '@mui/material';
 
 interface AboutProps {
     open: boolean;

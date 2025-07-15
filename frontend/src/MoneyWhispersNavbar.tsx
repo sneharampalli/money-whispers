@@ -1,18 +1,16 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
-// import HomePage from './pages/HomePage.tsx';
-// import MoneyVibeCheckTest from './pages/MoneyVibeCheckTest.tsx';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login.tsx';
 import Posts from './pages/Whispers.tsx';
 import ProtectedRoute from './pages/ProtectedRoute.tsx';
 import { useAuth } from './AuthContext';
-import { AppBar, Box, Button, IconButton, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, IconButton, Toolbar } from '@mui/material';
 import WhispersProvider from './pages/WhispersProvider.tsx';
 import Post from './pages/Whisper.tsx';
 import Secondary_Logo from './assets/Secondary_Black.svg';
-import About from './pages/About.tsx';
 import CommunityGuidelines from './pages/CommunityGuidelines.tsx';
-// Separate the navbar into its own component
+
+
 const NavbarComponent = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -43,23 +41,23 @@ const NavbarComponent = () => {
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
-        <IconButton 
+        <IconButton
           size="large"
           edge="start"
           color="inherit"
           aria-label="logo"
           onClick={() => navigate('/')}
         >
-          <img 
-            src={Secondary_Logo} 
-            alt="Logo" 
-            style={{ 
+          <img
+            src={Secondary_Logo}
+            alt="Logo"
+            style={{
               height: '24px',
               width: 'auto'
-            }} 
+            }}
           />
-        </IconButton> 
-        <Box sx={{ display: {xs: 'block', sm: 'flex'}, justifyContent: 'end', width: '100%' }}>
+        </IconButton>
+        <Box sx={{ display: { xs: 'block', sm: 'flex' }, justifyContent: 'end', width: '100%' }}>
           <Button color="primary" onClick={() => navigate('/community-guidelines')}>
             Community Guidelines
           </Button>
@@ -80,7 +78,7 @@ const MoneyWhispersNavbar = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
-        
+
         {/* Protected routes */}
         <Route
           path="/"
@@ -99,13 +97,13 @@ const MoneyWhispersNavbar = () => {
         />
 
         <Route
-            path="/whisper/:whisperId"
-            element={
-              <ProtectedRoute>
-                <Post />
-              </ProtectedRoute>
-            }
-          />
+          path="/whisper/:whisperId"
+          element={
+            <ProtectedRoute>
+              <Post />
+            </ProtectedRoute>
+          }
+        />
         {/* Redirect root to login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
