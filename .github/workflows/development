@@ -1,0 +1,33 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Action to check out your repository code
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify your Node.js version
+
+      - name: Install dependencies
+        run: npm install # Or `yarn install` if you use Yarn
+
+      - name: Run tests
+        run: npm test # Or your specific test command
+
+      # Example for a build step (if your project requires one)
+      - name: Build project
+        run: npm run build # Or your specific build command
+        # if: ${{ success() }} # Only run if previous steps succeed
