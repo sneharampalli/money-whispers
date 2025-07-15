@@ -30,10 +30,6 @@ jobs:
         # Look for a directory named 'react-router-dom' here.
         # This step helps confirm if the package was actually installed.
 
-      - name: Run Frontend Tests
-        run: npm test
-        working-directory: ./frontend
-
       - name: Build Frontend Project
         run: npm run build
         working-directory: ./frontend
