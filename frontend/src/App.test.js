@@ -1,3 +1,6 @@
+console.log('Current working directory:', process.cwd());
+console.log(require.resolve('react-router-dom'));
+  
 import { render, screen } from '@testing-library/react';
 import App from './App';
 

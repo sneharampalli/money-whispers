@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import {Button, Form, Modal} from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Form, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-
+import { Box, Button, FormControl, FormLabel, IconButton, Input, InputLabel, TextField, Typography } from '@mui/material';
+import { Modal } from '@mui/material';
+import Secondary_Logo from '../assets/Secondary_Black.svg';
 type User = {
     username: string;
     email?: string;
     password: string;
 }
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    boxShadow: 24,
+    p: 4,
+};
 
 // Page to show the users.
 const Login = () => { 
@@ -19,6 +31,7 @@ const Login = () => {
     });
 
     const { login } = useAuth();
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -60,7 +73,8 @@ const Login = () => {
                     errorMessage = errorData.error || errorMessage;
                 } catch (parseError) {
                 }
-                throw new Error(errorMessage);
+                setError(errorMessage);
+                return;
             }
 
             const result = await response.json();
@@ -69,7 +83,9 @@ const Login = () => {
                 username: '',
                 password: '',
              });
-             login(result);
+             // Set authentication state and redirect to root path
+            login(result);
+            navigate('/', { replace: true });
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {
@@ -79,37 +95,6 @@ const Login = () => {
             setShow(false);
         }
     };
-
-    const [logoutError, setLogoutError] = useState<string | null>(null);
-
-    const handleLogout = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await fetch(`${backendURL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                let logoutErrorMessage = 'Failed to logout.';
-                try {
-                    const logoutErrorData = await response.json();
-                    logoutErrorMessage = logoutErrorData.error || logoutErrorMessage;
-                } catch (parseError) {
-                }
-                throw new Error(logoutErrorMessage);
-            }
-
-            const result = await response.json();
-        } catch (err: any) {
-            setLogoutError(err.message || 'An unexpected error occurred.');
-        } finally {
-            console.log("logged out")
-        }
-    }
 
     const handleCreateUserSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -133,7 +118,8 @@ const Login = () => {
                     errorMessage = errorData.error || errorMessage;
                 } catch (parseError) {
                 }
-                throw new Error(errorMessage);
+                setError(errorMessage);
+                return;
             }
 
             const result = await response.json();
@@ -142,6 +128,8 @@ const Login = () => {
                 username: '',
                 password: '',
             });
+            login(result);
+            navigate('/');
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred.');
         } finally {
@@ -154,99 +142,110 @@ const Login = () => {
 
     return (
         <>
+        <div className='homePage'>
+            {/* <IconButton 
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="logo"
+            > */}
+                <img 
+                src={Secondary_Logo} 
+                alt="Logo" 
+                style={{ 
+                    height: '100px', // adjust size as needed
+                    width: 'auto'
+                }} 
+                />
+            {/* </IconButton> */}
+            <h1 style={{ fontFamily: 'Libre Baskerville' }}>anonymous, raw, and <span style={{fontFamily: 'Playfair Display'}}>real</span> money stories.</h1>
             <div className="loginButton">
-                <Button variant="primary" className="loginButton" onClick={handleLoginShow}>
-                    Login
-                </Button>
-                <Button variant="outline-primary" className="loginButton" onClick={handleLogout}>
-                    Logout
-                </Button>
-            </div>
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                <Modal.Title>{showLoginForm ? 'Login' : 'Create account'}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {showLoginForm && <Form onSubmit={handleLoginSubmit} className="space-y-4">
-                        <Form.Group>
-                            <Form.Label htmlFor="username" className="block text-sm font-medium">Username</Form.Label>
-                            <Form.Control
-                                id="username"
-                                name="username"
-                                value={postData.username}
-                                onChange={handleChange}
-                                placeholder="Enter your username"
-                                className="mt-1"
-                                required
-                                disabled={loading}
-                            />
-                            <Form.Label htmlFor="password" className="block text-sm font-medium">Password</Form.Label>
-                            <Form.Control
-                                id="password"
-                                name="password"
-                                value={postData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                className="mt-1"
-                                required
-                                type='password'
-                                disabled={loading}
-                            />
-                        </Form.Group>
-                        <br/>
-                        <Form.Text>Don't have an account. Create one <Button onClick={() => setShowLoginForm(false)}>here</Button>.</Form.Text>
-                    </Form>}
-                    {!showLoginForm && 
-                        <Form onSubmit={handleCreateUserSubmit} className="space-y-4">
-                            <Form.Group>
-                                <Form.Label htmlFor="username" className="block text-sm font-medium">Username</Form.Label>
-                                <Form.Control
-                                    id="username"
-                                    name="username"
-                                    value={postData.username}
-                                    onChange={handleChange}
-                                    placeholder="Enter your username"
-                                    className="mt-1"
-                                    required
-                                    disabled={loading}
-                                />
-                                <Form.Label htmlFor="password" className="block text-sm font-medium">Password</Form.Label>
-                                <Form.Control
-                                    id="password"
-                                    name="password"
-                                    value={postData.password}
-                                    onChange={handleChange}
-                                    placeholder="Enter your password"
-                                    className="mt-1"
-                                    required
-                                    type='password'
-                                    disabled={loading}
-                                />
-                                <Form.Label htmlFor="email" className="block text-sm font-medium">Email</Form.Label>
-                                <Form.Control
-                                    id="email"
-                                    name="email"
-                                    value={postData.email}
-                                    onChange={handleChange}
-                                    placeholder="Enter your email"
-                                    className="mt-1"
-                                    disabled={loading}
-                                />
-                            </Form.Group>
-                            <br/>
-                            <Form.Text>Have an account? Login <Button onClick={() => setShowLoginForm(true)}>here</Button>.</Form.Text>
-                        </Form>
+            <Button variant="contained" color="primary" onClick={handleLoginShow}>
+                Login
+            </Button>
+            <Modal open={show} onClose={handleClose}>
+                <Box sx={style}>
+                <Typography variant="h6">{showLoginForm ? 'Login' : 'Create account'}</Typography>
+                {showLoginForm && <FormControl fullWidth>
+                    <FormLabel>Username</FormLabel>
+                    <TextField
+                        id="username"
+                        name="username"
+                        value={postData.username}
+                        onChange={handleChange}
+                        placeholder="Enter your username"
+                        className="mt-1"
+                        required
+                        disabled={loading}
+                    />
+                    <br/>
+                    <FormLabel>Password</FormLabel>
+                    <TextField
+                        id="password"
+                        name="password"
+                        value={postData.password}
+                        onChange={handleChange}
+                        placeholder="Enter your password"
+                        className="mt-1"
+                        required
+                        type='password'
+                        disabled={loading}
+                    />
+                    <Typography>Don't have an account. Create one <Button variant='text' onClick={() => setShowLoginForm(false)}>here</Button>.</Typography>
+                    <Button variant="contained" color="primary" onClick={handleLoginSubmit}>
+                        {loading ? 'Logging in...' : 'Login'}
+                    </Button>
+                    {error && <Typography color="error">{error}</Typography>}
+                </FormControl>}
+                {!showLoginForm && 
+                    <FormControl fullWidth>
+                        <FormLabel>Username</FormLabel>
+                        <TextField
+                            id="username"
+                            name="username"
+                            value={postData.username}
+                            onChange={handleChange}
+                            placeholder="Enter your username"
+                            className="mt-1"
+                            required
+                            disabled={loading}
+                        />
+                        <FormLabel>Password</FormLabel>
+                        <TextField
+                            id="password"
+                            name="password"
+                            value={postData.password}
+                            onChange={handleChange}
+                            placeholder="Enter your password"
+                            className="mt-1"
+                            required
+                            type='password'
+                            disabled={loading}
+                        />
+                        <FormLabel>Email</FormLabel>
+                        <TextField
+                           id="email"
+                           name="email"
+                           value={postData.email}
+                           onChange={handleChange}
+                           placeholder="Enter your email"
+                           className="mt-1"
+                           disabled={loading}
+                        /> 
+                        <Typography>Have an account? Login <Button onClick={() => setShowLoginForm(true)}>here</Button>.</Typography>
+                        <Button variant="contained" color="primary" onClick={handleCreateUserSubmit}>
+                            {loading ? 'Creating...' : 'Create account'}
+                        </Button>
+                        {error && <Typography color="error">{error}</Typography>}
+                    </FormControl>
                     }
-                </Modal.Body>
-                <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Close
-                </Button>
-                <Button type="submit" disabled={loading} onClick={showLoginForm ? handleLoginSubmit : handleCreateUserSubmit}>
+                {/* <Button type="submit" disabled={loading} onClick={showLoginForm ? handleLoginSubmit : handleCreateUserSubmit}>
                     {loading ? 'Creating...' : 'Login'}
-                </Button>
-                </Modal.Footer>
+                </Button> */}
+                </Box>
             </Modal>
+            </div>
+        </div>
         </>
     );
 }

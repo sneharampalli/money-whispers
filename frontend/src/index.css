@@ -1,13 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Libre Baskerville', serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Override Material-UI and Bootstrap default fonts */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiInputBase-root,
+.form-control,
+.btn,
+.nav-link {
+  font-family: 'League Spartan', sans-serif !important;
 }
+
+.MuiAppBar-root {
+  background-color: #fff !important;
+  
+}
+
+/* Keep League Spartan for specific elements */
+.MoneyWhispersLogo,
+.homePageHeader,
+.navbar-brand {
+  font-family: 'League Spartan', sans-serif !important;
+}
+
+.MuiFormLabel-root {
+  font-family: 'League Spartan', sans-serif !important;
+}
+
+.MuiInputBase-root {
+  font-family: 'League Spartan', sans-serif !important;
+}
+
