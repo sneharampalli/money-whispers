@@ -9,25 +9,26 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build-and-test-frontend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Action to check out your repository code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Specify your Node.js version
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install # Or `yarn install` if you use Yarn
+      - name: Install Frontend Dependencies
+        run: npm install
+        working-directory: ./frontend
 
-      - name: Run tests
-        run: npm test # Or your specific test command
+      - name: Run Frontend Tests
+        run: npm test
+        working-directory: ./frontend
 
-      # Example for a build step (if your project requires one)
-      - name: Build project
-        run: npm run build # Or your specific build command
-        # if: ${{ success() }} # Only run if previous steps succeed
+      - name: Build Frontend Project
+        run: npm run build
+        working-directory: ./frontend
