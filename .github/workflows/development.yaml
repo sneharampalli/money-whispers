@@ -25,6 +25,11 @@ jobs:
         run: npm install
         working-directory: ./frontend
 
+      - name: List installed modules in frontend/node_modules (Diagnostic)
+        run: ls -la ./frontend/node_modules # List contents of the node_modules directory
+        # Look for a directory named 'react-router-dom' here.
+        # This step helps confirm if the package was actually installed.
+
       - name: Run Frontend Tests
         run: npm test
         working-directory: ./frontend
