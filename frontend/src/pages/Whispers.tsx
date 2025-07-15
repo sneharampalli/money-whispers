@@ -81,7 +81,7 @@ const CreateWhisper = () => {
 
     useEffect(() => {
         fetchMessages();
-    }, []);
+    }, [fetchMessages]);
 
     useEffect(() => {
         setWhisperFormData(prev => ({ ...prev }));
@@ -147,7 +147,6 @@ const CreateWhisper = () => {
                 throw new Error(errorMessage);
             }
 
-            // const result = await response.json();
             setSuccessThread(true);
             setThreadData({ thread_id: '', title: '', description: '' });
             context?.fetchThreads();
@@ -192,7 +191,6 @@ const CreateWhisper = () => {
                 throw new Error(errorMessage);
             }
 
-            const result = await response.json();
             setSuccessWhisper(true);
             setWhisperFormData({ message: '', thread_id: '', title: '' });
             await fetchMessages(); // Await the refresh
