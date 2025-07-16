@@ -56,6 +56,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Log OIDC Token Claims
+        run: |
+          echo "GITHUB_REPOSITORY: ${{ github.repository }}"
+          echo "GITHUB_REF: ${{ github.ref }}"
+          echo "GITHUB_ACTOR: ${{ github.actor }}"
+          echo "GITHUB_EVENT_NAME: ${{ github.event_name }}"
+          echo "GITHUB_WORKFLOW: ${{ github.workflow }}"
+          echo "GITHUB_JOB: ${{ github.job }}"
+
       - name: Authenticate to Google Cloud
         id: auth # This ID is used to reference outputs from this step
         uses: google-github-actions/auth@v2
