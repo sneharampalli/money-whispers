@@ -103,14 +103,17 @@ jobs:
       - name: Debug Docker Info
         run: docker info
 
-      - name: Build and Push Backend Docker Image
-        # This assumes you have a Dockerfile in your 'backend' directory.
-        # It will build the image and push it to Google Artifact Registry (or Container Registry).
+      - name: Build and push Docker image
+        working-directory: backend/
         run: |
-          gcloud auth configure-docker # Authenticate Docker to GCP registries
-          docker build -t gcr.io/money-whispers-d24b9/money-whispers-backend:latest .
-          docker push gcr.io/money-whispers-d24b9/money-whispers-backend:latest
-        working-directory: ./backend # Build from your backend directory
+          PROJECT_ID=$(gcloud config get-value project)
+          echo "DEBUG: Detected Google Cloud Project ID: ${PROJECT_ID}"
+          IMAGE_TAG="gcr.io/${PROJECT_ID}/money-whispers-backend:${{ github.sha }}"
+          echo "DEBUG: Full Docker Image Tag being used: ${IMAGE_TAG}"
+          docker build -t "${IMAGE_TAG}" .
+          echo "DEBUG: Docker build command completed."
+          docker push "${IMAGE_TAG}"
+          echo "DEBUG: Docker push command completed."
 
       - name: Deploy Backend to Cloud Run
         # Replace 'money-whispers-service' with your desired Cloud Run service name.
