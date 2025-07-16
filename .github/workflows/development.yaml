@@ -56,14 +56,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug GitHub OIDC Claims
-        run: |
-          echo "--- OIDC TOKEN CLAIMS ---"
-          OIDC_RESPONSE=$(curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}")
-          TOKEN_VALUE=$(echo "${OIDC_RESPONSE}" | jq -r '.value')
-          echo "${TOKEN_VALUE}" | tr -d '\0-\31\177' | jq -R 'split(".") | .[1] | @base64d | fromjson'
-          echo "--- END OIDC TOKEN CLAIMS ---"
-
       - name: Authenticate to Google Cloud
         id: auth # This ID is used to reference outputs from this step
         uses: google-github-actions/auth@v2
