@@ -82,7 +82,7 @@ jobs:
 
       - name: Install Backend Dependencies
         # Adjust path if your backend's requirements.txt is not directly under 'backend'
-        run: pip install -r backend/requirements.txt
+        run: pip install -r requirements.txt
         working-directory: ./backend # Set working directory to your backend folder
 
       - name: Verify Google Cloud Authentication
