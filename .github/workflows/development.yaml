@@ -62,7 +62,7 @@ jobs:
         with:
           # Full resource name of your Workload Identity Provider
           # projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID
-          workload_identity_provider: 'projects/970981805477/locations/global/workloadIdentityPools/github-actions-pool/providers/money-whispers-github-actions'
+          workload_identity_provider: 'projects/365077371450/locations/global/workloadIdentityPools/github-actions-pool/providers/money-whispers-github-actions'
           # Email of the Google Cloud service account to impersonate
           service_account: 'github-action-968926442@money-whispers-d24b9.iam.gserviceaccount.com'
 
