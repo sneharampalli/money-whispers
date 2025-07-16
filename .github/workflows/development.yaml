@@ -97,6 +97,12 @@ jobs:
       # Assuming your backend is in a 'backend' directory at the root of your repo
       # And you want to deploy it to Cloud Run.
 
+      - name: Configure Docker to use gcloud credentials for GCR.io
+        run: gcloud auth configure-docker --quiet
+
+      - name: Debug Docker Info
+        run: docker info
+
       - name: Build and Push Backend Docker Image
         # This assumes you have a Dockerfile in your 'backend' directory.
         # It will build the image and push it to Google Artifact Registry (or Container Registry).
