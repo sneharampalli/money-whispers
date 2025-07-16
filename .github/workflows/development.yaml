@@ -33,3 +33,83 @@ jobs:
       - name: Build Frontend Project
         run: npm run build
         working-directory: ./frontend
+
+      # Add your frontend deployment step here if applicable
+      # For example, to deploy to Firebase Hosting or Google Cloud Storage
+      # - name: Deploy Frontend
+      #   run: |
+      #     # Example for Firebase Hosting, assuming Firebase CLI is installed and configured
+      #     firebase deploy --only hosting --project money-whispers-d24b9
+      #   working-directory: ./frontend
+
+
+  deploy-backend:
+    runs-on: ubuntu-latest
+    # Uncomment 'needs' if you want backend deployment to wait for frontend build/test
+    # needs: [build-and-test-frontend]
+    environment: production # Good practice to specify deployment environment
+    permissions:
+      contents: 'read'
+      id-token: 'write' # REQUIRED for Workload Identity Federation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth # This ID is used to reference outputs from this step
+        uses: google-github-actions/auth@v2
+        with:
+          # Full resource name of your Workload Identity Provider
+          # projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID
+          workload_identity_provider: 'projects/970981805477/locations/global/workloadIdentityPools/github-actions-pool/providers/money-whispers-github-actions'
+          # Email of the Google Cloud service account to impersonate
+          service_account: 'github-action-968926442@money-whispers-d24b9.iam.gserviceaccount.com'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9' # Adjust to your backend's Python version
+
+      - name: Install Backend Dependencies
+        # Adjust path if your backend's requirements.txt is not directly under 'backend'
+        run: pip install -r backend/requirements.txt
+        working-directory: ./backend # Set working directory to your backend folder
+
+      - name: Verify Google Cloud Authentication
+        run: |
+          # The 'auth' action automatically sets up gcloud CLI.
+          # We're just verifying and setting the project context explicitly.
+          gcloud auth list
+          gcloud config set project money-whispers-d24b9
+          echo "Successfully authenticated to Google Cloud as ${{ steps.auth.outputs.service_account_email }}"
+
+      # --- Your Backend Deployment Steps Go Here ---
+      # Assuming your backend is in a 'backend' directory at the root of your repo
+      # And you want to deploy it to Cloud Run.
+
+      - name: Build and Push Backend Docker Image
+        # This assumes you have a Dockerfile in your 'backend' directory.
+        # It will build the image and push it to Google Artifact Registry (or Container Registry).
+        run: |
+          gcloud auth configure-docker # Authenticate Docker to GCP registries
+          docker build -t gcr.io/money-whispers-d24b9/money-whispers-backend:latest .
+          docker push gcr.io/money-whispers-d24b9/money-whispers-backend:latest
+        working-directory: ./backend # Build from your backend directory
+
+      - name: Deploy Backend to Cloud Run
+        # Replace 'money-whispers-service' with your desired Cloud Run service name.
+        # Replace 'us-central1' with your desired region.
+        # Adjust --allow-unauthenticated as per your service's public/private access.
+        run: |
+          gcloud run deploy money-whispers-service \
+            --image gcr.io/money-whispers-d24b9/money-whispers-backend:latest \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --project money-whispers-d24b9 # Ensure project is explicitly set
+
+      # Add other backend-related commands as needed (e.g., database migrations, cron job updates)
+      # - name: Run Database Migrations
+      #   run: python manage.py migrate # Example for Django/Flask apps
+      #   working-directory: ./backend
