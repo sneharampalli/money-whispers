@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/static/css/main.c461d792.css",
+    "main.js": "/static/js/main.9e0abbd5.js",
+    "static/js/453.7c0def6a.chunk.js": "/static/js/453.7c0def6a.chunk.js",
+    "static/media/libre-baskerville-latin-ext-400-normal.woff2": "/static/media/libre-baskerville-latin-ext-400-normal.e2f6042e31d4cff06f13.woff2",
+    "static/media/libre-baskerville-latin-400-normal.woff2": "/static/media/libre-baskerville-latin-400-normal.c1d91c1abd38d2c9eb12.woff2",
+    "static/media/libre-baskerville-latin-ext-400-normal.woff": "/static/media/libre-baskerville-latin-ext-400-normal.3d2fd842d53aa5b55745.woff",
+    "static/media/libre-baskerville-latin-400-normal.woff": "/static/media/libre-baskerville-latin-400-normal.aa4900f6a4a637e90a28.woff",
+    "static/media/league-spartan-latin-400-normal.woff": "/static/media/league-spartan-latin-400-normal.d53354d9776c83f85cac.woff",
+    "static/media/league-spartan-latin-ext-400-normal.woff": "/static/media/league-spartan-latin-ext-400-normal.9c73f580917e70ee2b12.woff",
+    "static/media/league-spartan-latin-400-normal.woff2": "/static/media/league-spartan-latin-400-normal.797fff38949029545548.woff2",
+    "static/media/league-spartan-latin-ext-400-normal.woff2": "/static/media/league-spartan-latin-ext-400-normal.d3a1d7090236c46e224c.woff2",
+    "static/media/league-spartan-vietnamese-400-normal.woff": "/static/media/league-spartan-vietnamese-400-normal.936c1952556a28ab2a24.woff",
+    "static/media/league-spartan-vietnamese-400-normal.woff2": "/static/media/league-spartan-vietnamese-400-normal.8753aa303f52d1b31e3b.woff2",
+    "static/media/Secondary_Black.svg": "/static/media/Secondary_Black.0100f60e3b8afef6f92787bfaf7d1e32.svg",
+    "index.html": "/index.html",
+    "main.c461d792.css.map": "/static/css/main.c461d792.css.map",
+    "main.9e0abbd5.js.map": "/static/js/main.9e0abbd5.js.map",
+    "453.7c0def6a.chunk.js.map": "/static/js/453.7c0def6a.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c461d792.css",
+    "static/js/main.9e0abbd5.js"
+  ]
+}
