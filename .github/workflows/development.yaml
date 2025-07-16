@@ -59,11 +59,10 @@ jobs:
       - name: Debug GitHub OIDC Claims
         run: |
           echo "--- OIDC TOKEN CLAIMS ---"
-          TOKEN=$(curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" ${ACTIONS_ID_TOKEN_REQUEST_URL} | jq -r .value)
-          echo $TOKEN | jq -R 'split(".") | .[1] | @base64d | fromjson'
+          OIDC_RESPONSE=$(curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}")
+          TOKEN_VALUE=$(echo "${OIDC_RESPONSE}" | jq -r '.value')
+          echo "${TOKEN_VALUE}" | tr -d '\0-\31\177' | jq -R 'split(".") | .[1] | @base64d | fromjson'
           echo "--- END OIDC TOKEN CLAIMS ---"
-        # Make sure you have 'jq' installed on the runner if it's not a standard GitHub-hosted runner
-        # On Ubuntu/Debian: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Authenticate to Google Cloud
         id: auth # This ID is used to reference outputs from this step
