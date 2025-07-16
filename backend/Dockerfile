@@ -36,4 +36,4 @@ EXPOSE 8000
 # If your app is in 'app.py' and the Flask instance is 'create_app()', you might need a different command.
 # This example assumes a typical Flask app served by Gunicorn.
 # The --bind 0.0.0.0:8000 makes the app accessible from outside the container.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_app_module:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
